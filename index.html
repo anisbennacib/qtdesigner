@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Python - Manipulation des Tables Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .logo-placeholder {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .logo-placeholder.empty {
+            border: 4px dashed rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .logo-placeholder.empty::before {
+            content: "🎓";
+            font-size: 60px;
+            opacity: 0.6;
+        }
+        
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: fadeIn 1s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+        }
+        
+        .toc h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .toc ul {
+            list-style: none;
+        }
+        
+        .toc li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .toc li:last-child {
+            border-bottom: none;
+        }
+        
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: block;
+        }
+        
+        .toc a:hover {
+            color: #667eea;
+            padding-left: 10px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+            scroll-margin-top: 20px;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-number {
+            background: rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .section-header h2 {
+            font-size: 1.5em;
+        }
+        
+        .description {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .description strong {
+            color: #667eea;
+        }
+        
+        .code-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .code-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .copy-btn, .zoom-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover, .zoom-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        
+        .copy-btn.copied {
+            background: #28a745;
+        }
+        
+        .zoom-btn.zoomed {
+            background: #ffc107;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        
+        .keyword { color: #ff79c6; }
+        .string { color: #50fa7b; }
+        .number { color: #bd93f9; }
+        .comment { color: #6272a4; }
+        .function { color: #8be9fd; }
+        
+        .key-points {
+            background: #fff9e6;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .key-points h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .key-points ul {
+            list-style-position: inside;
+        }
+        
+        .key-points li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ffe082;
+        }
+        
+        .key-points li:last-child {
+            border-bottom: none;
+        }
+        
+        .comparison {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .comparison strong {
+            color: #2e7d32;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 3px solid #667eea;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .copy-btn {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .content {
+                padding: 20px;
+            }
+            pre {
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-placeholder">
+                <img src="logo-rond2.png" alt="ABN Academy Logo" class="logo" onerror="this.style.display='none'; this.parentElement.classList.add('empty')">
+            </div>
+            <h1>📚 Guide Pratique Python</h1>
+            <p>Manipulation des TableWidget et ListWidget</p>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;">ABN Academy - Support de cours</p>
+        </div>
+        
+        <div class="content">
+            <div class="toc">
+                <h2>📑 Table des matières</h2>
+                <ul>
+                    <li><a href="#section1">1. Affichage d'un fichier texte dans une liste Widget</a></li>
+                    <li><a href="#section2">2. Remplissage d'un tableau (Méthode setItem)</a></li>
+                    <li><a href="#section3">3. Remplissage d'un tableau (Méthode insertRow)</a></li>
+                    <li><a href="#section4">4. Chargement depuis un fichier binaire (taille inconnue)</a></li>
+                    <li><a href="#section5">5. Chargement depuis un fichier binaire (taille connue)</a></li>
+                    <li><a href="#section6">6. Affichage d'une matrice NL × NC</a></li>
+                    <li><a href="#points-cles">📌 Points clés à retenir</a></li>
+                </ul>
+            </div>
+            
+            <div class="section" id="section1">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2>Affichage d'un fichier texte dans une liste Widget</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Lire un fichier texte ligne par ligne et ajouter chaque ligne à une liste Widget (QListWidget).
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="comment"># Ouvrir le fichier en mode lecture</span>
+f = <span class="function">open</span>(<span class="string">"nom_f.txt"</span>, <span class="string">"r"</span>)
+ch = f.<span class="function">readline</span>()
+
+<span class="keyword">while</span> ch != <span class="string">""</span>:
+    ch = ch[:<span class="function">len</span>(ch)-<span class="number">1</span>]  <span class="comment"># Suppression du '\n'</span>
+    w.nom_liste.<span class="function">addItem</span>(ch)
+    ch = f.<span class="function">readline</span>()
+
+f.<span class="function">close</span>()</code></pre>
+                </div>
+            </div>
+            
+            <div class="section" id="section2">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h2>Remplissage d'un tableau - Méthode setItem()</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Remplir un tableau en définissant d'abord le nombre de lignes avec <code>setRowCount()</code>.
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="comment"># Définir le nombre de lignes</span>
+w.nom_tw.<span class="function">setRowCount</span>(n)
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):
+    <span class="comment"># Colonne 0 : Champ numérique (conversion en string)</span>
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">0</span>, <span class="function">QTableWidgetItem</span>(<span class="function">str</span>(t[i][<span class="string">"champ numérique"</span>])))
+    
+    <span class="comment"># Colonne 1 : Champ de type chaîne</span>
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">1</span>, <span class="function">QTableWidgetItem</span>(t[i][<span class="string">"champ de type chaine"</span>]))</code></pre>
+                </div>
+            </div>
+            
+            <div class="section" id="section3">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <h2>Remplissage d'un tableau - Méthode insertRow()</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Remplir un tableau en insérant les lignes une par une avec <code>insertRow()</code>.
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="comment"># Initialiser le tableau à 0 lignes</span>
+w.nom_tw.<span class="function">setRowCount</span>(<span class="number">0</span>)
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):
+    <span class="comment"># Insérer une nouvelle ligne à la position i</span>
+    w.nom_tw.<span class="function">insertRow</span>(i)
+    
+    <span class="comment"># Remplir les cellules</span>
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">0</span>, <span class="function">QTableWidgetItem</span>(<span class="function">str</span>(t[i][<span class="string">"champ numérique"</span>])))
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">1</span>, <span class="function">QTableWidgetItem</span>(t[i][<span class="string">"champ de type chaine"</span>]))</code></pre>
+                </div>
+                
+                <div class="comparison">
+                    <strong>Différence :</strong> <code>setRowCount()</code> fixe le nombre total de lignes au départ, tandis que <code>insertRow()</code> ajoute les lignes progressivement.
+                </div>
+            </div>
+            
+            <div class="section" id="section4">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <h2>Chargement fichier binaire (taille inconnue)</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Charger des enregistrements depuis un fichier binaire (.dat) sans connaître le nombre d'enregistrements à l'avance.
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="keyword">from</span> pickle <span class="keyword">import</span> load
+
+<span class="comment"># Ouvrir le fichier en mode binaire</span>
+f = <span class="function">open</span>(<span class="string">"nom_f.dat"</span>, <span class="string">"rb"</span>)
+w.nom_tw.<span class="function">setRowCount</span>(<span class="number">0</span>)
+i = <span class="number">0</span>
+eof = <span class="keyword">False</span>
+
+<span class="keyword">while</span> <span class="keyword">not</span>(eof):
+    <span class="keyword">try</span>:
+        <span class="comment"># Charger un enregistrement</span>
+        e = <span class="function">load</span>(f)
+        w.nom_tw.<span class="function">insertRow</span>(i)
+        w.nom_tw.<span class="function">setItem</span>(i, <span class="number">0</span>, <span class="function">QTableWidgetItem</span>(<span class="function">str</span>(e[<span class="string">"champ numérique"</span>])))
+        w.nom_tw.<span class="function">setItem</span>(i, <span class="number">1</span>, <span class="function">QTableWidgetItem</span>(e[<span class="string">"champ de type chaine"</span>]))
+        i = i + <span class="number">1</span>
+    <span class="keyword">except</span>:
+        <span class="comment"># Fin du fichier atteinte</span>
+        eof = <span class="keyword">True</span>
+
+f.<span class="function">close</span>()</code></pre>
+                </div>
+            </div>
+            
+            <div class="section" id="section5">
+                <div class="section-header">
+                    <div class="section-number">5</div>
+                    <h2>Chargement fichier binaire (taille connue)</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Charger des enregistrements depuis un fichier binaire lorsque le nombre d'enregistrements est connu.
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="keyword">from</span> pickle <span class="keyword">import</span> load
+
+<span class="comment"># Ouvrir le fichier en mode binaire</span>
+f = <span class="function">open</span>(<span class="string">"nom_f.dat"</span>, <span class="string">"rb"</span>)
+w.nom_tw.<span class="function">setRowCount</span>(n)
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):
+    <span class="comment"># Charger un enregistrement</span>
+    e = <span class="function">load</span>(f)
+    w.nom_tw.<span class="function">insertRow</span>(i)
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">0</span>, <span class="function">QTableWidgetItem</span>(<span class="function">str</span>(e[<span class="string">"champ numérique"</span>])))
+    w.nom_tw.<span class="function">setItem</span>(i, <span class="number">1</span>, <span class="function">QTableWidgetItem</span>(e[<span class="string">"champ de type chaine"</span>]))
+
+f.<span class="function">close</span>()</code></pre>
+                </div>
+            </div>
+            
+            <div class="section" id="section6">
+                <div class="section-header">
+                    <div class="section-number">6</div>
+                    <h2>Affichage d'une matrice NL × NC</h2>
+                </div>
+                
+                <div class="description">
+                    <strong>Objectif :</strong> Remplir un tableau à double dimension (matrice) dans un QTableWidget.
+                </div>
+                
+                <div class="code-container">
+                    <div class="code-actions">
+                        <button class="zoom-btn" onclick="zoomCode(this)">🔍 Zoom</button>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre><code><span class="comment"># Définir les dimensions du tableau</span>
+w.nom_tw.<span class="function">setRowCount</span>(NL)      <span class="comment"># Nombre de lignes</span>
+w.nom_tw.<span class="function">setColumnCount</span>(NC)  <span class="comment"># Nombre de colonnes</span>
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(NL):
+    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(NC):
+        <span class="comment"># Remplir chaque cellule de la matrice</span>
+        w.nom_tw.<span class="function">setItem</span>(i, j, <span class="function">QTableWidgetItem</span>(<span class="function">str</span>(e[<span class="string">"champ numérique"</span>])))</code></pre>
+                </div>
+            </div>
+            
+            <div class="key-points" id="points-cles">
+                <h3>📌 Points clés à retenir</h3>
+                <ul>
+                    <li><strong>QTableWidgetItem :</strong> Objet nécessaire pour insérer des données dans les cellules d'un tableau</li>
+                    <li><strong>str() :</strong> Conversion obligatoire pour afficher des données numériques dans le tableau</li>
+                    <li><strong>setRowCount() vs insertRow() :</strong> Deux approches pour gérer les lignes (définir au départ vs ajouter progressivement)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>ABN Academy - Anis Ben Nacib</strong></p>
+            <p>Guide créé pour faciliter l'apprentissage de Python et PyQt</p>
+            <p>© 2026 - Tous droits réservés</p>
+        </div>
+    </div>
+    
+    <script>
+        function zoomCode(button) {
+            const codeBlock = button.closest('.code-container').querySelector('pre');
+            
+            if (button.classList.contains('zoomed')) {
+                codeBlock.style.fontSize = '1.05em';
+                button.textContent = '🔍 Zoom';
+                button.classList.remove('zoomed');
+            } else {
+                codeBlock.style.fontSize = '1.4em';
+                button.textContent = '🔍 Normal';
+                button.classList.add('zoomed');
+            }
+        }
+        
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-container').querySelector('code');
+            const codeText = codeBlock.innerText || codeBlock.textContent;
+            
+            navigator.clipboard.writeText(codeText).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ Copié !';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback pour navigateurs plus anciens
+                const textArea = document.createElement('textarea');
+                textArea.value = codeText;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    button.textContent = '✓ Copié !';
+                    button.classList.add('copied');
+                    setTimeout(() => {
+                        button.textContent = '📋 Copier';
+                        button.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    alert('Impossible de copier. Veuillez sélectionner et copier manuellement.');
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        // Smooth scrolling pour les liens de la table des matières
+        document.querySelectorAll('.toc a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
